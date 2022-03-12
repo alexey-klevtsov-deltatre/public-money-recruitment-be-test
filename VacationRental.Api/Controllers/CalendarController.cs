@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using VacationRental.Api.Models;
+using VacationRental.Repository;
 
 namespace VacationRental.Api.Controllers
 {
@@ -9,15 +10,15 @@ namespace VacationRental.Api.Controllers
     [ApiController]
     public class CalendarController : ControllerBase
     {
-        private readonly IDictionary<int, RentalViewModel> _rentals;
-        private readonly IDictionary<int, BookingViewModel> _bookings;
+        private readonly IVacationRepository<RentalViewModel> _rentalRepository;
+        private readonly IVacationRepository<BookingViewModel> _bookingRepository;
 
         public CalendarController(
-            IDictionary<int, RentalViewModel> rentals,
-            IDictionary<int, BookingViewModel> bookings)
+            IVacationRepository<RentalViewModel> rentalRepository,
+            IVacationRepository<BookingViewModel> bookingRepository)
         {
-            _rentals = rentals;
-            _bookings = bookings;
+            _rentalRepository = rentalRepository;
+            _bookingRepository = bookingRepository;
         }
 
         [HttpGet]
@@ -25,7 +26,7 @@ namespace VacationRental.Api.Controllers
         {
             if (nights < 0)
                 throw new ApplicationException("Nights must be positive");
-            if (!_rentals.ContainsKey(rentalId))
+            if (!_rentalRepository.Exists(rentalId))
                 throw new ApplicationException("Rental not found");
 
             var result = new CalendarViewModel 
@@ -41,7 +42,7 @@ namespace VacationRental.Api.Controllers
                     Bookings = new List<CalendarBookingViewModel>()
                 };
 
-                foreach (var booking in _bookings.Values)
+                foreach (var booking in _bookingRepository.Get())
                 {
                     if (booking.RentalId == rentalId
                         && booking.Start <= date.Date && booking.Start.AddDays(booking.Nights) > date.Date)

@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using VacationRental.Api.Models;
+using VacationRental.Repository;
 
 namespace VacationRental.Api.Controllers
 {
@@ -9,29 +9,30 @@ namespace VacationRental.Api.Controllers
     [ApiController]
     public class RentalsController : ControllerBase
     {
-        private readonly IDictionary<int, RentalViewModel> _rentals;
+        private readonly IVacationRepository<RentalViewModel> _rentalRepository;
 
-        public RentalsController(IDictionary<int, RentalViewModel> rentals)
+        public RentalsController(IVacationRepository<RentalViewModel> rentalRepository)
         {
-            _rentals = rentals;
+            _rentalRepository = rentalRepository;
         }
 
         [HttpGet]
         [Route("{rentalId:int}")]
         public RentalViewModel Get(int rentalId)
         {
-            if (!_rentals.ContainsKey(rentalId))
+            var rental = _rentalRepository.Get(rentalId);
+            if (rental == null)
                 throw new ApplicationException("Rental not found");
 
-            return _rentals[rentalId];
+            return rental;
         }
 
         [HttpPost]
         public ResourceIdViewModel Post(RentalBindingModel model)
         {
-            var key = new ResourceIdViewModel { Id = _rentals.Keys.Count + 1 };
+            var key = new ResourceIdViewModel { Id = _rentalRepository.NextId() };
 
-            _rentals.Add(key.Id, new RentalViewModel
+            _rentalRepository.Insert(key.Id, new RentalViewModel
             {
                 Id = key.Id,
                 Units = model.Units
