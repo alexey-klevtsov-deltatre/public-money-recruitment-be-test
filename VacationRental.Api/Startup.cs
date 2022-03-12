@@ -4,8 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using VacationRental.Api.Models;
-using VacationRental.Repository;
+using VacationRental.Core;
 
 namespace VacationRental.Api
 {
@@ -20,15 +19,12 @@ namespace VacationRental.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Vacation rental information", Version = "v1" });
             });
-
-            services.AddSingleton<IVacationRepository<BookingViewModel>, VacationInMemoryRepository<BookingViewModel>>();
-            services.AddSingleton<IVacationRepository<RentalViewModel>, VacationInMemoryRepository<RentalViewModel>>();
+            services.AddVacationRentalCore();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

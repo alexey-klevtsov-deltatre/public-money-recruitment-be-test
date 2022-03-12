@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VacationRental.Repository\VacationRental.Repository.csproj" />
+    <ProjectReference Include="..\VacationRental.Core\VacationRental.Core.csproj" />
   </ItemGroup>
 
 </Project>

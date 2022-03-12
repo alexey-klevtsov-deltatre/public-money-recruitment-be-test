@@ -1,6 +1,7 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
-using VacationRental.Api.Models;
+using VacationRental.Core.Model;
+using VacationRental.Core.Models;
 using Xunit;
 
 namespace VacationRental.Api.Tests

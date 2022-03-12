@@ -1,7 +1,6 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
-using VacationRental.Api.Models;
-using VacationRental.Repository;
+﻿using Microsoft.AspNetCore.Mvc;
+using VacationRental.Core.Models;
+using VacationRental.Core.Services;
 
 namespace VacationRental.Api.Controllers
 {
@@ -9,36 +8,15 @@ namespace VacationRental.Api.Controllers
     [ApiController]
     public class RentalsController : ControllerBase
     {
-        private readonly IVacationRepository<RentalViewModel> _rentalRepository;
+        private readonly IRentalsService _rentalsService;
 
-        public RentalsController(IVacationRepository<RentalViewModel> rentalRepository)
-        {
-            _rentalRepository = rentalRepository;
-        }
+        public RentalsController(IRentalsService rentalsService) => _rentalsService = rentalsService;
 
         [HttpGet]
         [Route("{rentalId:int}")]
-        public RentalViewModel Get(int rentalId)
-        {
-            var rental = _rentalRepository.Get(rentalId);
-            if (rental == null)
-                throw new ApplicationException("Rental not found");
-
-            return rental;
-        }
+        public RentalViewModel Get(int rentalId) => _rentalsService.Get(rentalId);
 
         [HttpPost]
-        public ResourceIdViewModel Post(RentalBindingModel model)
-        {
-            var key = new ResourceIdViewModel { Id = _rentalRepository.NextId() };
-
-            _rentalRepository.Insert(key.Id, new RentalViewModel
-            {
-                Id = key.Id,
-                Units = model.Units
-            });
-
-            return key;
-        }
+        public ResourceIdViewModel Post(RentalBindingModel model) => _rentalsService.Rent(model);
     }
 }
