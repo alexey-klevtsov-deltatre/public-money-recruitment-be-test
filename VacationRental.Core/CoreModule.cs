@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using VacationRental.Core.Model;
 using VacationRental.Core.Models;
 using VacationRental.Core.Services;
 using VacationRental.Repository;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using VacationRental.Core.Model;
 using VacationRental.Core.Models;
 using VacationRental.Repository;
 
@@ -11,7 +10,8 @@ namespace VacationRental.Core.Services
         private readonly IVacationRepository<BookingViewModel> _bookingRepository;
         private readonly IVacationRepository<RentalViewModel> _rentalRepository;
 
-        public BookingsService(IVacationRepository<BookingViewModel> bookingRepository, IVacationRepository<RentalViewModel> rentalRepository)
+        public BookingsService(IVacationRepository<BookingViewModel> bookingRepository,
+            IVacationRepository<RentalViewModel> rentalRepository)
         {
             _bookingRepository = bookingRepository;
             _rentalRepository = rentalRepository;
@@ -34,18 +34,15 @@ namespace VacationRental.Core.Services
             if (!_rentalRepository.Exists(model.RentalId))
                 throw new ApplicationException("Rental not found");
 
-            for (var i = 0; i < model.Nights; i++)
-            {
-                var count = _bookingRepository.Get().Count(booking =>
-                    booking.RentalId == model.RentalId && (booking.Start <= model.Start.Date &&
-                                                           booking.Start.AddDays(booking.Nights) > model.Start.Date) ||
-                    (booking.Start < model.Start.AddDays(model.Nights) &&
-                     booking.Start.AddDays(booking.Nights) >= model.Start.AddDays(model.Nights)) ||
-                    (booking.Start > model.Start &&
-                     booking.Start.AddDays(booking.Nights) < model.Start.AddDays(model.Nights)));
-                if (count >= _rentalRepository.Get(model.RentalId).Units)
-                    throw new ApplicationException("Not available");
-            }
+            var count = _bookingRepository.Get().Count(booking =>
+                booking.RentalId == model.RentalId && booking.Start <= model.Start.Date &&
+                booking.Start.AddDays(booking.Nights) > model.Start.Date ||
+                booking.Start < model.Start.AddDays(model.Nights) &&
+                booking.Start.AddDays(booking.Nights) >= model.Start.AddDays(model.Nights) ||
+                booking.Start > model.Start &&
+                booking.Start.AddDays(booking.Nights) < model.Start.AddDays(model.Nights));
+            if (count >= _rentalRepository.Get(model.RentalId).Units)
+                throw new ApplicationException("Not available");
 
             var key = new ResourceIdViewModel { Id = _bookingRepository.NextId() };
 

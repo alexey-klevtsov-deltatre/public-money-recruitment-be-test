@@ -21,12 +21,18 @@ namespace VacationRental.Core.Services
 
         public ResourceIdViewModel Rent(RentalBindingModel model)
         {
+            if(model.Units < 1)
+                throw new ApplicationException("Rental should have at least one unit");
+            if (model.PreparationTimeInDays < 0)
+                throw new ApplicationException("PreparationTimeInDays must be positive");
+
             var key = new ResourceIdViewModel { Id = _rentalRepository.NextId() };
 
             _rentalRepository.Insert(key.Id, new RentalViewModel
             {
                 Id = key.Id,
-                Units = model.Units
+                Units = model.Units,
+                PreparationTimeInDays = model.PreparationTimeInDays
             });
 
             return key;

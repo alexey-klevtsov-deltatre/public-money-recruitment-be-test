@@ -1,6 +1,5 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
-using VacationRental.Core.Model;
 using VacationRental.Core.Models;
 using Xunit;
 

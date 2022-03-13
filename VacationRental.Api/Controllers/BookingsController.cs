@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
-using VacationRental.Core.Model;
 using VacationRental.Core.Models;
 using VacationRental.Core.Services;
 

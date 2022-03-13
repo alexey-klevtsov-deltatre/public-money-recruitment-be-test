@@ -1,5 +1,4 @@
-﻿using VacationRental.Core.Model;
-using VacationRental.Core.Models;
+﻿using VacationRental.Core.Models;
 
 namespace VacationRental.Core.Services
 {

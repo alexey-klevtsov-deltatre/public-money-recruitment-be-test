@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace VacationRental.Core.Model
+namespace VacationRental.Core.Models
 {
     public class BookingViewModel
     {
