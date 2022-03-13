@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using VacationRental.Core.Models;
 using VacationRental.Repository;
 
@@ -7,8 +8,13 @@ namespace VacationRental.Core.Services
     public sealed class RentalsService : IRentalsService
     {
         private readonly IVacationRepository<RentalViewModel> _rentalRepository;
+        private readonly IBookingsService _bookingsService;
 
-        public RentalsService(IVacationRepository<RentalViewModel> rentalRepository) => _rentalRepository = rentalRepository;
+        public RentalsService(IVacationRepository<RentalViewModel> rentalRepository, IBookingsService bookingsService)
+        {
+            _rentalRepository = rentalRepository;
+            _bookingsService = bookingsService;
+        }
 
         public RentalViewModel Get(int rentalId)
         {
@@ -19,23 +25,39 @@ namespace VacationRental.Core.Services
             return rental;
         }
 
-        public ResourceIdViewModel Rent(RentalBindingModel model)
+        public ResourceIdViewModel AddRental(RentalBindingModel model)
         {
-            if(model.Units < 1)
-                throw new ApplicationException("Rental should have at least one unit");
-            if (model.PreparationTimeInDays < 0)
-                throw new ApplicationException("PreparationTimeInDays must be positive");
+            Validate(model);
 
             var key = new ResourceIdViewModel { Id = _rentalRepository.NextId() };
 
-            _rentalRepository.Insert(key.Id, new RentalViewModel
-            {
-                Id = key.Id,
-                Units = model.Units,
-                PreparationTimeInDays = model.PreparationTimeInDays
-            });
+            _rentalRepository.Insert(key.Id, new RentalViewModel(key.Id, model));
 
             return key;
+        }
+
+        public RentalViewModel UpdateRental(int rentalId, RentalBindingModel model)
+        {
+            Validate(model);
+
+            var oldRental = _rentalRepository.Get(rentalId);
+            if (oldRental == null)
+                throw new ApplicationException("Rental not found");
+
+            var newRental = new RentalViewModel(rentalId, model);
+            var overllappings = _bookingsService.GetOverlappings(newRental);
+            if (overllappings != null)
+                throw new ApplicationException($"There are overlappings: {overllappings.OverlappedBookings.Select(id => id)}");
+
+            return _rentalRepository.Update(rentalId, newRental);
+        }
+
+        private static void Validate(RentalBindingModel model)
+        {
+            if (model.Units < 1)
+                throw new ApplicationException("Rental should have at least one unit");
+            if (model.PreparationTimeInDays < 0)
+                throw new ApplicationException("PreparationTimeInDays must be positive");
         }
     }
 }

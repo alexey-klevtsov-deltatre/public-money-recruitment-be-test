@@ -5,6 +5,7 @@ namespace VacationRental.Core.Services
     public interface IRentalsService
     {
         RentalViewModel Get(int rentalId);
-        ResourceIdViewModel Rent(RentalBindingModel model);
+        ResourceIdViewModel AddRental(RentalBindingModel model);
+        RentalViewModel UpdateRental(int rentalId, RentalBindingModel model);
     }
 }

@@ -46,7 +46,7 @@ namespace VacationRental.Core.Services
 
                 foreach (var booking in rentalBookings)
                 {
-                    var endBookingDate = booking.Start.AddDays(booking.Nights);
+                    var endBookingDate = booking.End();
                     if (booking.Start <= date.Date && endBookingDate > date.Date)
                     {
                         date.Bookings.Add(new CalendarBookingViewModel { Id = booking.Id, Unit = booking.Unit });

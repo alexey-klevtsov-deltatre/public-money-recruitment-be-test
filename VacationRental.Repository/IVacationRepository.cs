@@ -9,6 +9,7 @@ namespace VacationRental.Repository
         IEnumerable<T> Get(Func<T, bool> predicate);
         IEnumerable<T> Get();
         void Insert(int id, T data);
+        T Update(int id, T data);
         int NextId();
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace VacationRental.Core.Models
 {
-    public class ResourceIdViewModel
+    public sealed class ResourceIdViewModel
     {
         public int Id { get; set; }
     }

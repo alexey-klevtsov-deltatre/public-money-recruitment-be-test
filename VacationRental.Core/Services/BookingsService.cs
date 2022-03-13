@@ -50,10 +50,33 @@ namespace VacationRental.Core.Services
             return key;
         }
 
+        public OverlappedBookingViewModel GetOverlappings(RentalViewModel rental)
+        {
+            var bookings = _bookingRepository
+                .Get(booking => booking.RentalId == rental.Id && booking.EndWithPreparations(rental) >= DateTime.UtcNow)
+                .ToArray();
+
+            for (var checkingBookingIdx = 0; checkingBookingIdx < bookings.Length; checkingBookingIdx++)
+            {
+                var checkingBooking = bookings[checkingBookingIdx];
+                for (var bookedIdx = checkingBookingIdx + 1; bookedIdx < bookings.Length; bookedIdx++)
+                {
+                    var booked = bookings[bookedIdx];
+                    if (Intersect(rental, new BookingBindingModel { Start = checkingBooking.Start }, booked))
+                    {
+                        return new OverlappedBookingViewModel
+                            { OverlappedBookings = new[] { checkingBooking.Id, booked.Id } };
+                    }
+                }
+            }
+
+            return null;
+        }
+
         private int GetFreeRoom(RentalViewModel rental, BookingBindingModel newBooking)
         {
             var ocupiedUnits = _bookingRepository
-                .Get(booking => booking.RentalId == rental.Id && Intersects(rental, newBooking, booking))
+                .Get(booking => booking.RentalId == rental.Id && Intersect(rental, newBooking, booking))
                 .Select(booking => booking.Unit).ToHashSet();
             if (ocupiedUnits.Count >= rental.Units)
                 throw new ApplicationException("Not available");
@@ -69,13 +92,11 @@ namespace VacationRental.Core.Services
             throw new ApplicationException("Not available");
         }
 
-        private static bool Intersects(RentalViewModel rental, BookingBindingModel firstBooking,
+        public static bool Intersect(RentalViewModel rental, BookingBindingModel firstBooking,
             BookingViewModel secondBooking)
         {
-            var secondBookingEndDate =
-                secondBooking.Start.AddDays(secondBooking.Nights).AddDays(rental.PreparationTimeInDays);
-            var firstBookingEndDate =
-                firstBooking.Start.AddDays(firstBooking.Nights).AddDays(rental.PreparationTimeInDays);
+            var secondBookingEndDate = secondBooking.EndWithPreparations(rental);
+            var firstBookingEndDate = firstBooking.EndWithPreparations(rental);
 
             return secondBooking.Start <= firstBooking.Start.Date && secondBookingEndDate > firstBooking.Start.Date ||
                    secondBooking.Start < firstBookingEndDate && secondBookingEndDate >= firstBookingEndDate ||

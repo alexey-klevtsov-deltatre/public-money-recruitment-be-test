@@ -2,7 +2,7 @@
 
 namespace VacationRental.Core.Models
 {
-    public class BookingBindingModel
+    public sealed class BookingBindingModel
     {
         private DateTime _startIgnoreTime;
 
@@ -15,5 +15,8 @@ namespace VacationRental.Core.Models
         }
 
         public int Nights { get; set; }
+
+        public DateTime End() => Start.Date.AddDays(Nights);
+        public DateTime EndWithPreparations(RentalViewModel rental) => End().AddDays(rental.PreparationTimeInDays);
     }
 }

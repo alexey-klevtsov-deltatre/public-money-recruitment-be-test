@@ -17,6 +17,9 @@ namespace VacationRental.Api.Controllers
         public RentalViewModel Get(int rentalId) => _rentalsService.Get(rentalId);
 
         [HttpPost]
-        public ResourceIdViewModel Post(RentalBindingModel model) => _rentalsService.Rent(model);
+        public ResourceIdViewModel Post(RentalBindingModel model) => _rentalsService.AddRental(model);
+
+        [HttpPut]
+        public RentalViewModel Put(int rentalId, [FromBody]RentalBindingModel model) => _rentalsService.UpdateRental(rentalId, model);
     }
 }

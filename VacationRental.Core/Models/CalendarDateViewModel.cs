@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace VacationRental.Core.Models
 {
-    public class CalendarDateViewModel
+    public sealed class CalendarDateViewModel
     {
         public DateTime Date { get; set; }
         public IList<CalendarBookingViewModel> Bookings { get; set; }
