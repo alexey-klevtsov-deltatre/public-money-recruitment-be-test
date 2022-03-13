@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using VacationRental.Core.Models;
 using VacationRental.Repository;
 
@@ -22,7 +23,9 @@ namespace VacationRental.Core.Services
         {
             if (nights < 0)
                 throw new ApplicationException("Nights must be positive");
-            if (!_rentalRepository.Exists(rentalId))
+
+            var rental = _rentalRepository.Get(rentalId);
+            if (rental == null)
                 throw new ApplicationException("Rental not found");
 
             var result = new CalendarViewModel
@@ -30,20 +33,27 @@ namespace VacationRental.Core.Services
                 RentalId = rentalId,
                 Dates = new List<CalendarDateViewModel>()
             };
+
+            var rentalBookings = _bookingRepository.Get(booked => booked.RentalId == rentalId).ToArray();
             for (var i = 0; i < nights; i++)
             {
                 var date = new CalendarDateViewModel
                 {
                     Date = start.Date.AddDays(i),
-                    Bookings = new List<CalendarBookingViewModel>()
+                    Bookings = new List<CalendarBookingViewModel>(),
+                    PreparationTimes = new List<PreparationViewModel>()
                 };
 
-                foreach (var booking in _bookingRepository.Get())
+                foreach (var booking in rentalBookings)
                 {
-                    if (booking.RentalId == rentalId
-                        && booking.Start <= date.Date && booking.Start.AddDays(booking.Nights) > date.Date)
+                    var endBookingDate = booking.Start.AddDays(booking.Nights);
+                    if (booking.Start <= date.Date && endBookingDate > date.Date)
                     {
-                        date.Bookings.Add(new CalendarBookingViewModel { Id = booking.Id });
+                        date.Bookings.Add(new CalendarBookingViewModel { Id = booking.Id, Unit = booking.Unit });
+                    }
+                    if (endBookingDate <= date.Date && endBookingDate.AddDays(rental.PreparationTimeInDays) > date.Date)
+                    {
+                        date.PreparationTimes.Add(new PreparationViewModel { Unit = booking.Unit });
                     }
                 }
 

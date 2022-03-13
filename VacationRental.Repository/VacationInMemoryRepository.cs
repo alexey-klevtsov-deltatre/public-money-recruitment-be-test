@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace VacationRental.Repository
 {
@@ -9,9 +10,9 @@ namespace VacationRental.Repository
         
         public T Get(int id) => !_storage.ContainsKey(id) ? default : _storage[id];
 
-        public IEnumerable<T> Get() => _storage.Values;
+        public IEnumerable<T> Get(Func<T, bool> predicate) => _storage.Values.Where(predicate);
 
-        public bool Exists(int id) => _storage.ContainsKey(id);
+        public IEnumerable<T> Get() => _storage.Values;
 
         public void Insert(int id, T data)
         {

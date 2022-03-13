@@ -52,7 +52,8 @@ namespace VacationRental.Core.Services
 
         private int GetFreeRoom(RentalViewModel rental, BookingBindingModel newBooking)
         {
-            var ocupiedUnits = _bookingRepository.Get().Where(booking => Intersects(rental, newBooking, booking))
+            var ocupiedUnits = _bookingRepository
+                .Get(booking => booking.RentalId == rental.Id && Intersects(rental, newBooking, booking))
                 .Select(booking => booking.Unit).ToHashSet();
             if (ocupiedUnits.Count >= rental.Units)
                 throw new ApplicationException("Not available");
@@ -68,13 +69,15 @@ namespace VacationRental.Core.Services
             throw new ApplicationException("Not available");
         }
 
-        private static bool Intersects(RentalViewModel rental, BookingBindingModel firstBooking, BookingViewModel secondBooking)
+        private static bool Intersects(RentalViewModel rental, BookingBindingModel firstBooking,
+            BookingViewModel secondBooking)
         {
-            var secondBookingEndDate = secondBooking.Start.AddDays(secondBooking.Nights).AddDays(rental.PreparationTimeInDays);
-            var firstBookingEndDate = firstBooking.Start.AddDays(firstBooking.Nights).AddDays(rental.PreparationTimeInDays);
+            var secondBookingEndDate =
+                secondBooking.Start.AddDays(secondBooking.Nights).AddDays(rental.PreparationTimeInDays);
+            var firstBookingEndDate =
+                firstBooking.Start.AddDays(firstBooking.Nights).AddDays(rental.PreparationTimeInDays);
 
-            return secondBooking.RentalId == firstBooking.RentalId &&
-                   secondBooking.Start <= firstBooking.Start.Date && secondBookingEndDate > firstBooking.Start.Date ||
+            return secondBooking.Start <= firstBooking.Start.Date && secondBookingEndDate > firstBooking.Start.Date ||
                    secondBooking.Start < firstBookingEndDate && secondBookingEndDate >= firstBookingEndDate ||
                    secondBooking.Start > firstBooking.Start && secondBookingEndDate < firstBookingEndDate;
         }

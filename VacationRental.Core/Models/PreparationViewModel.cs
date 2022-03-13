@@ -1,8 +1,7 @@
 ﻿namespace VacationRental.Core.Models
 {
-    public class CalendarBookingViewModel
+    public sealed class PreparationViewModel
     {
-        public int Id { get; set; }
         public int Unit { get; set; }
     }
 }
