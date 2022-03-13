@@ -24,7 +24,7 @@ namespace VacationRental.Api.Tests
             };
 
             ResourceIdViewModel postResult;
-            using (var postResponse = await _client.PostAsJsonAsync($"/api/v1/rentals", request))
+            using (var postResponse = await _client.PostAsJsonAsync("/api/v1/rentals", request))
             {
                 Assert.True(postResponse.IsSuccessStatusCode);
                 postResult = await postResponse.Content.ReadAsAsync<ResourceIdViewModel>();

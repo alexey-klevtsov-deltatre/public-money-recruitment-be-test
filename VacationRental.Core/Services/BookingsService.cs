@@ -31,17 +31,14 @@ namespace VacationRental.Core.Services
         {
             if (model.Nights <= 0)
                 throw new ApplicationException("Nigts must be positive");
-            if (!_rentalRepository.Exists(model.RentalId))
+
+            var rental = _rentalRepository.Get(model.RentalId);
+            if (rental == null)
                 throw new ApplicationException("Rental not found");
 
-            var count = _bookingRepository.Get().Count(booking =>
-                booking.RentalId == model.RentalId && booking.Start <= model.Start.Date &&
-                booking.Start.AddDays(booking.Nights) > model.Start.Date ||
-                booking.Start < model.Start.AddDays(model.Nights) &&
-                booking.Start.AddDays(booking.Nights) >= model.Start.AddDays(model.Nights) ||
-                booking.Start > model.Start &&
-                booking.Start.AddDays(booking.Nights) < model.Start.AddDays(model.Nights));
-            if (count >= _rentalRepository.Get(model.RentalId).Units)
+            var ocupiedUnits = _bookingRepository.Get().Where(booking => Intersects(model, booking))
+                .Select(booking => booking.Unit).ToHashSet();
+            if (ocupiedUnits.Count >= rental.Units)
                 throw new ApplicationException("Not available");
 
             var key = new ResourceIdViewModel { Id = _bookingRepository.NextId() };
@@ -51,10 +48,40 @@ namespace VacationRental.Core.Services
                 Id = key.Id,
                 Nights = model.Nights,
                 RentalId = model.RentalId,
-                Start = model.Start.Date
+                Start = model.Start.Date,
+                Unit = GetFreeRoom(rental, model)
             });
 
             return key;
+        }
+
+        private int GetFreeRoom(RentalViewModel rental, BookingBindingModel newBooking)
+        {
+            var ocupiedUnits = _bookingRepository.Get().Where(booking => Intersects(newBooking, booking))
+                .Select(booking => booking.Unit).ToHashSet();
+            if (ocupiedUnits.Count >= rental.Units)
+                throw new ApplicationException("Not available");
+
+            for (var unit = 1; unit <= rental.Units; unit++)
+            {
+                if (!ocupiedUnits.Contains(unit))
+                {
+                    return unit;
+                }
+            }
+
+            throw new ApplicationException("Not available");
+        }
+
+        private static bool Intersects(BookingBindingModel firstBooking, BookingViewModel secondBooking)
+        {
+            var secondBookingEndDate = secondBooking.Start.AddDays(secondBooking.Nights);
+            var firstBookingEndDate = firstBooking.Start.AddDays(firstBooking.Nights);
+
+            return secondBooking.RentalId == firstBooking.RentalId &&
+                   secondBooking.Start <= firstBooking.Start.Date && secondBookingEndDate > firstBooking.Start.Date ||
+                   secondBooking.Start < firstBookingEndDate && secondBookingEndDate >= firstBookingEndDate ||
+                   secondBooking.Start > firstBooking.Start && secondBookingEndDate < firstBookingEndDate;
         }
     }
 }

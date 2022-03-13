@@ -38,21 +38,23 @@ namespace VacationRental.Api.Tests
                  Start = new DateTime(2001, 01, 01)
             };
 
-            ResourceIdViewModel postBookingResult;
-            using (var postBookingResponse = await _client.PostAsJsonAsync($"/api/v1/bookings", postBookingRequest))
+            for (var i = 1; i <= postRentalRequest.Units; i++)
             {
-                Assert.True(postBookingResponse.IsSuccessStatusCode);
-                postBookingResult = await postBookingResponse.Content.ReadAsAsync<ResourceIdViewModel>();
-            }
+                ResourceIdViewModel postBookingResult;
+                using (var postBookingResponse = await _client.PostAsJsonAsync($"/api/v1/bookings", postBookingRequest))
+                {
+                    Assert.True(postBookingResponse.IsSuccessStatusCode);
+                    postBookingResult = await postBookingResponse.Content.ReadAsAsync<ResourceIdViewModel>();
+                }
 
-            using (var getBookingResponse = await _client.GetAsync($"/api/v1/bookings/{postBookingResult.Id}"))
-            {
+                using var getBookingResponse = await _client.GetAsync($"/api/v1/bookings/{postBookingResult.Id}");
                 Assert.True(getBookingResponse.IsSuccessStatusCode);
 
                 var getBookingResult = await getBookingResponse.Content.ReadAsAsync<BookingViewModel>();
                 Assert.Equal(postBookingRequest.RentalId, getBookingResult.RentalId);
                 Assert.Equal(postBookingRequest.Nights, getBookingResult.Nights);
                 Assert.Equal(postBookingRequest.Start, getBookingResult.Start);
+                Assert.Equal(getBookingResult.Unit, i);
             }
         }
 
@@ -92,9 +94,7 @@ namespace VacationRental.Api.Tests
 
             await Assert.ThrowsAsync<ApplicationException>(async () =>
             {
-                using (var postBooking2Response = await _client.PostAsJsonAsync($"/api/v1/bookings", postBooking2Request))
-                {
-                }
+                using var postBooking2Response = await _client.PostAsJsonAsync($"/api/v1/bookings", postBooking2Request);
             });
         }
     }
