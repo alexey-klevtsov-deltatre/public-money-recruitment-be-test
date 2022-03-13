@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using VacationRental.Core.Exceptions;
 using VacationRental.Core.Models;
 using VacationRental.Repository;
 
@@ -62,7 +63,8 @@ namespace VacationRental.Core.Services
                 for (var bookedIdx = checkingBookingIdx + 1; bookedIdx < bookings.Length; bookedIdx++)
                 {
                     var booked = bookings[bookedIdx];
-                    if (Intersect(rental, new BookingBindingModel { Start = checkingBooking.Start }, booked))
+                    if (booked.Unit == checkingBooking.Unit && Intersect(rental,
+                        new BookingBindingModel { Start = checkingBooking.Start }, booked))
                     {
                         return new OverlappedBookingViewModel
                             { OverlappedBookings = new[] { checkingBooking.Id, booked.Id } };
@@ -79,7 +81,7 @@ namespace VacationRental.Core.Services
                 .Get(booking => booking.RentalId == rental.Id && Intersect(rental, newBooking, booking))
                 .Select(booking => booking.Unit).ToHashSet();
             if (ocupiedUnits.Count >= rental.Units)
-                throw new ApplicationException("Not available");
+                throw new OverbookingException();
 
             for (var unit = 1; unit <= rental.Units; unit++)
             {
@@ -89,7 +91,7 @@ namespace VacationRental.Core.Services
                 }
             }
 
-            throw new ApplicationException("Not available");
+            throw new OverbookingException();
         }
 
         public static bool Intersect(RentalViewModel rental, BookingBindingModel firstBooking,
