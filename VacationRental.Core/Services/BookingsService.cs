@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using VacationRental.Core.Exceptions;
+using VacationRental.Core.Extensions;
 using VacationRental.Core.Models;
 using VacationRental.Repository;
 
@@ -51,34 +53,34 @@ namespace VacationRental.Core.Services
             return key;
         }
 
-        public OverlappedBookingViewModel GetOverlappings(RentalViewModel rental)
+        public IEnumerable<OverlappedBookingViewModel> GetOverlappings(RentalViewModel rental)
         {
-            var bookings = _bookingRepository
-                .Get(booking => booking.RentalId == rental.Id && booking.EndWithPreparations(rental) >= DateTime.UtcNow)
-                .ToArray();
+            var bookings = _bookingRepository.Get(booking => booking.RentalId == rental.Id).ToArray();
 
             for (var checkingBookingIdx = 0; checkingBookingIdx < bookings.Length; checkingBookingIdx++)
             {
-                var checkingBooking = bookings[checkingBookingIdx];
+                var checkedBooking = bookings[checkingBookingIdx];
+                if (checkedBooking.Unit > rental.Units)
+                {
+                    yield return new OverlappedBookingViewModel { OverlappedBookings = new[] { checkedBooking } };
+                }
+
                 for (var bookedIdx = checkingBookingIdx + 1; bookedIdx < bookings.Length; bookedIdx++)
                 {
                     var booked = bookings[bookedIdx];
-                    if (booked.Unit == checkingBooking.Unit && Intersect(rental,
-                        new BookingBindingModel { Start = checkingBooking.Start }, booked))
+                    if (booked.Unit == checkedBooking.Unit && Intersect(rental,
+                        checkedBooking, booked))
                     {
-                        return new OverlappedBookingViewModel
-                            { OverlappedBookings = new[] { checkingBooking.Id, booked.Id } };
+                        yield return new OverlappedBookingViewModel
+                            { OverlappedBookings = new[] { checkedBooking, booked } };
                     }
                 }
             }
-
-            return null;
         }
 
         private int GetFreeRoom(RentalViewModel rental, BookingBindingModel newBooking)
         {
-            var ocupiedUnits = _bookingRepository
-                .Get(booking => booking.RentalId == rental.Id && Intersect(rental, newBooking, booking))
+            var ocupiedUnits = _bookingRepository.Get(booking => booking.RentalId == rental.Id && Intersect(rental, newBooking, booking))
                 .Select(booking => booking.Unit).ToHashSet();
             if (ocupiedUnits.Count >= rental.Units)
                 throw new OverbookingException();
@@ -94,13 +96,12 @@ namespace VacationRental.Core.Services
             throw new OverbookingException();
         }
 
-        public static bool Intersect(RentalViewModel rental, BookingBindingModel firstBooking,
-            BookingViewModel secondBooking)
+        public static bool Intersect(RentalViewModel rental, IBookingModel firstBooking, IBookingModel secondBooking)
         {
-            var secondBookingEndDate = secondBooking.EndWithPreparations(rental);
             var firstBookingEndDate = firstBooking.EndWithPreparations(rental);
+            var secondBookingEndDate = secondBooking.EndWithPreparations(rental);
 
-            return secondBooking.Start <= firstBooking.Start.Date && secondBookingEndDate > firstBooking.Start.Date ||
+            return secondBooking.Start <= firstBooking.Start && secondBookingEndDate > firstBooking.Start ||
                    secondBooking.Start < firstBookingEndDate && secondBookingEndDate >= firstBookingEndDate ||
                    secondBooking.Start > firstBooking.Start && secondBookingEndDate < firstBookingEndDate;
         }

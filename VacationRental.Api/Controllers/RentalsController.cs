@@ -20,6 +20,7 @@ namespace VacationRental.Api.Controllers
         public ResourceIdViewModel Post(RentalBindingModel model) => _rentalsService.AddRental(model);
 
         [HttpPut]
+        [Route("{rentalId:int}")]
         public RentalViewModel Put(int rentalId, [FromBody]RentalBindingModel model) => _rentalsService.UpdateRental(rentalId, model);
     }
 }

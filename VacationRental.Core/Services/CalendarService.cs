@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using VacationRental.Core.Extensions;
 using VacationRental.Core.Models;
 using VacationRental.Repository;
 
