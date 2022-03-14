@@ -6,7 +6,7 @@ namespace VacationRental.Api.Controllers
 {
     [Route("api/v1/rentals")]
     [ApiController]
-    public class RentalsController : ControllerBase
+    public sealed class RentalsController : ControllerBase
     {
         private readonly IRentalsService _rentalsService;
 

@@ -7,7 +7,7 @@ namespace VacationRental.Api.Controllers
 {
     [Route("api/v1/calendar")]
     [ApiController]
-    public class CalendarController : ControllerBase
+    public sealed class CalendarController : ControllerBase
     {
         private readonly ICalendarService _calendarService;
 

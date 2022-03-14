@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using VacationRental.Core.Models;
 using VacationRental.Core.Services;
 
@@ -7,7 +6,7 @@ namespace VacationRental.Api.Controllers
 {
     [Route("api/v1/bookings")]
     [ApiController]
-    public class BookingsController : ControllerBase
+    public sealed class BookingsController : ControllerBase
     {
         private readonly IBookingsService _bookingsService;
 
