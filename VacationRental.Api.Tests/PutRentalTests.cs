@@ -50,6 +50,22 @@ namespace VacationRental.Api.Tests
 
             var getResult = await getResponse.Content.ReadAsAsync<RentalViewModel>();
             Assert.Equal(request.Units, getResult.Units);
+            Assert.Equal(request.PreparationTimeInDays, getResult.PreparationTimeInDays);
+
+            using var getCalendarResponse = await _client.GetAsync($"/api/v1/calendar?rentalId={postResult.Id}&start=2002-01-01&nights=8");
+            Assert.True(getCalendarResponse.IsSuccessStatusCode);
+            var getCalendarResult = await getCalendarResponse.Content.ReadAsAsync<CalendarViewModel>();
+
+            var date = getCalendarResult.Dates[3];
+            Assert.Single(date.PreparationTimes);
+            date = getCalendarResult.Dates[4];
+            Assert.Equal(2, date.PreparationTimes.Count);
+            date = getCalendarResult.Dates[5];
+            Assert.Equal(2, date.PreparationTimes.Count);
+            date = getCalendarResult.Dates[6];
+            Assert.Single(date.PreparationTimes);
+            date = getCalendarResult.Dates[7];
+            Assert.Empty(date.PreparationTimes);
         }
 
         [Fact]
