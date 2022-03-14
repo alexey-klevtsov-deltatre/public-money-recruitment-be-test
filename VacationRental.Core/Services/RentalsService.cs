@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using VacationRental.Core.Exceptions;
 using VacationRental.Core.Models;
 using VacationRental.Repository;
 
@@ -45,9 +46,9 @@ namespace VacationRental.Core.Services
                 throw new ApplicationException("Rental not found");
 
             var newRental = new RentalViewModel(rentalId, model);
-            var overllappings = _bookingsService.GetOverlappings(newRental).FirstOrDefault();
-            if (overllappings != null)
-                throw new ApplicationException($"There are overlappings: {overllappings}");
+            var overlapped = _bookingsService.GetOverlappings(newRental).FirstOrDefault();
+            if (overlapped != null)
+                throw new RentalOverlappedException(overlapped);
 
             return _rentalRepository.Update(rentalId, newRental);
         }

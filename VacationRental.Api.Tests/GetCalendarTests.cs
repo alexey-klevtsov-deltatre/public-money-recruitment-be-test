@@ -7,7 +7,7 @@ using Xunit;
 namespace VacationRental.Api.Tests
 {
     [Collection("Integration")]
-    public class GetCalendarTests
+    public sealed class GetCalendarTests
     {
         private readonly HttpClient _client;
 
