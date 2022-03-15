@@ -68,6 +68,20 @@ namespace VacationRental.Core.Services
 
         public IEnumerable<OverlappedBookingViewModel> GetOverlappings(RentalViewModel rental)
         {
+            try
+            {
+                return LockAndGetOverlappings(rental);
+            }
+            catch (LockAcquireException)
+            {
+                throw new RentalLockException(rental.Id);
+            }
+        }
+
+        private IEnumerable<OverlappedBookingViewModel> LockAndGetOverlappings(RentalViewModel rental)
+        {
+            using var syncLock = _syncLockFactory.CreateLock(rental.LockKey());
+
             var bookings = _bookingRepository.Get(booking => booking.RentalId == rental.Id).ToArray();
 
             for (var checkingBookingIdx = 0; checkingBookingIdx < bookings.Length; checkingBookingIdx++)
@@ -85,7 +99,7 @@ namespace VacationRental.Core.Services
                         checkedBooking, booked))
                     {
                         yield return new OverlappedBookingViewModel
-                        { OverlappedBookings = new[] { checkedBooking, booked } };
+                            { OverlappedBookings = new[] { checkedBooking, booked } };
                     }
                 }
             }
