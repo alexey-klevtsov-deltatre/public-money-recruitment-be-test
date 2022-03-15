@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using VacationRental.Core.Exceptions;
 using VacationRental.Core.Extensions;
 using VacationRental.Core.Models;
 using VacationRental.Repository;
+using VacationRental.Synchronization.Exceptions;
+using VacationRental.Synchronization.Lock;
 
 namespace VacationRental.Core.Services
 {
@@ -11,13 +14,16 @@ namespace VacationRental.Core.Services
     {
         private readonly IVacationRepository<RentalViewModel> _rentalRepository;
         private readonly IVacationRepository<BookingViewModel> _bookingRepository;
+        private readonly ISyncLockFactory _syncLockFactory;
 
         public CalendarService(
             IVacationRepository<RentalViewModel> rentalRepository,
-            IVacationRepository<BookingViewModel> bookingRepository)
+            IVacationRepository<BookingViewModel> bookingRepository,
+            ISyncLockFactory syncLockFactory)
         {
             _rentalRepository = rentalRepository;
             _bookingRepository = bookingRepository;
+            _syncLockFactory = syncLockFactory;
         }
 
         public CalendarViewModel Get(int rentalId, DateTime start, int nights)
@@ -29,13 +35,27 @@ namespace VacationRental.Core.Services
             if (rental == null)
                 throw new ApplicationException("Rental not found");
 
+            try
+            {
+                using var syncLock = _syncLockFactory.CreateLock(rental.LockKey());
+
+                return GetBookingCalendar(rental, start, nights);
+            }
+            catch (LockAcquireException)
+            {
+                throw new RentalLockException(rental.Id);
+            }
+        }
+
+        private CalendarViewModel GetBookingCalendar(RentalViewModel rental, DateTime start, int nights)
+        {
             var result = new CalendarViewModel
             {
-                RentalId = rentalId,
+                RentalId = rental.Id,
                 Dates = new List<CalendarDateViewModel>()
             };
 
-            var rentalBookings = _bookingRepository.Get(booked => booked.RentalId == rentalId).ToArray();
+            var rentalBookings = _bookingRepository.Get(booked => booked.RentalId == rental.Id).ToArray();
             for (var i = 0; i < nights; i++)
             {
                 var date = new CalendarDateViewModel
