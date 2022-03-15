@@ -11,14 +11,15 @@ namespace VacationRental.Synchronization.Lock
         private readonly ConcurrentDictionary<string, SyncLock> _lockStorage;
         private readonly ILogger<SyncLock> _logger;
 
-        internal SyncLock(string key, ConcurrentDictionary<string, SyncLock> lockStorage, ILogger<SyncLock> logger)
+        internal SyncLock(string key, ConcurrentDictionary<string, SyncLock> lockStorage, ILogger<SyncLock> logger, Exception lockFailureException = null)
         {
             _key = key;
             _lockStorage = lockStorage;
             _logger = logger;
+           
             if (!_lockStorage.TryAdd(_key, this))
             {
-                throw new LockAcquireException(key);
+                throw lockFailureException ?? new LockAcquireException(key);
             }
         }
 

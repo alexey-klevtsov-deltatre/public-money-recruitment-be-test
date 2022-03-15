@@ -5,7 +5,6 @@ using VacationRental.Core.Exceptions;
 using VacationRental.Core.Extensions;
 using VacationRental.Core.Models;
 using VacationRental.Repository;
-using VacationRental.Synchronization.Exceptions;
 using VacationRental.Synchronization.Lock;
 
 namespace VacationRental.Core.Services
@@ -43,11 +42,9 @@ namespace VacationRental.Core.Services
             if (rental == null)
                 throw new ApplicationException("Rental not found");
 
-            try
-            {
-                using var syncLock = _syncLockFactory.CreateLock(rental.LockKey());
+            using var syncLock = _syncLockFactory.CreateLock(rental.LockKey(), new RentalLockException(rental.Id));
 
-                var key = new ResourceIdViewModel { Id = _bookingRepository.NextId() };
+            var key = new ResourceIdViewModel { Id = _bookingRepository.NextId() };
 
                 _bookingRepository.Insert(key.Id, new BookingViewModel
                 {
@@ -59,28 +56,11 @@ namespace VacationRental.Core.Services
                 });
 
                 return key;
-            }
-            catch (LockAcquireException)
-            {
-                throw new RentalLockException(model.RentalId);
-            }
         }
 
         public IEnumerable<OverlappedBookingViewModel> GetOverlappings(RentalViewModel rental)
         {
-            try
-            {
-                return LockAndGetOverlappings(rental);
-            }
-            catch (LockAcquireException)
-            {
-                throw new RentalLockException(rental.Id);
-            }
-        }
-
-        private IEnumerable<OverlappedBookingViewModel> LockAndGetOverlappings(RentalViewModel rental)
-        {
-            using var syncLock = _syncLockFactory.CreateLock(rental.LockKey());
+            using var syncLock = _syncLockFactory.CreateLock(rental.LockKey(), new RentalLockException(rental.Id));
 
             var bookings = _bookingRepository.Get(booking => booking.RentalId == rental.Id).ToArray();
 
@@ -105,7 +85,7 @@ namespace VacationRental.Core.Services
             }
         }
 
-        private int GetFreeRoom(RentalViewModel rental, BookingBindingModel newBooking)
+        private int GetFreeRoom(RentalViewModel rental, IBookingModel newBooking)
         {
             var ocupiedUnits = _bookingRepository.Get(booking => booking.RentalId == rental.Id && Intersect(rental, newBooking, booking))
                 .Select(booking => booking.Unit).ToHashSet();

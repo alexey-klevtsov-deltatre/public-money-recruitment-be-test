@@ -5,7 +5,6 @@ using VacationRental.Core.Exceptions;
 using VacationRental.Core.Extensions;
 using VacationRental.Core.Models;
 using VacationRental.Repository;
-using VacationRental.Synchronization.Exceptions;
 using VacationRental.Synchronization.Lock;
 
 namespace VacationRental.Core.Services
@@ -35,16 +34,10 @@ namespace VacationRental.Core.Services
             if (rental == null)
                 throw new ApplicationException("Rental not found");
 
-            try
-            {
-                using var syncLock = _syncLockFactory.CreateLock(rental.LockKey());
 
-                return GetBookingCalendar(rental, start, nights);
-            }
-            catch (LockAcquireException)
-            {
-                throw new RentalLockException(rental.Id);
-            }
+            using var syncLock = _syncLockFactory.CreateLock(rental.LockKey(), new RentalLockException(rental.Id));
+
+            return GetBookingCalendar(rental, start, nights);
         }
 
         private CalendarViewModel GetBookingCalendar(RentalViewModel rental, DateTime start, int nights)

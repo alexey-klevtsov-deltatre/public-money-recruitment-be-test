@@ -1,7 +1,9 @@
-﻿namespace VacationRental.Synchronization.Lock
+﻿using System;
+
+namespace VacationRental.Synchronization.Lock
 {
     public interface ISyncLockFactory
     {
-        SyncLock CreateLock(string key);
+        SyncLock CreateLock(string key, Exception lockFailureException = null);
     }
 }

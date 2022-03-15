@@ -20,6 +20,7 @@ namespace VacationRental.Synchronization.Lock
                 attempt => TimeSpan.FromSeconds(Math.Pow(1.5, attempt)));
         }
 
-        public SyncLock CreateLock(string key) => _retryPolicy.Execute(() => new SyncLock(key, LockStorage, _logger));
+        public SyncLock CreateLock(string key, Exception lockFailureException = null) =>
+            _retryPolicy.Execute(() => new SyncLock(key, LockStorage, _logger, lockFailureException));
     }
 }
