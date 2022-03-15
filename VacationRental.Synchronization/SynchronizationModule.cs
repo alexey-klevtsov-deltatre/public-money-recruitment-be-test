@@ -8,8 +8,7 @@ namespace VacationRental.Synchronization
 {
     public static class SynchronizationModule
     {
-        public static IServiceCollection
-            AddSynchronization(this IServiceCollection services, IConfiguration configuration) => services
+        public static IServiceCollection AddSynchronization(this IServiceCollection services, IConfiguration configuration) => services
             .RegisterSettings<SynchronizationSettings>(configuration.GetSection("Synchronization_Settings"))
             .AddSingleton<ISyncLockFactory, SyncLockFactory>();
     }
