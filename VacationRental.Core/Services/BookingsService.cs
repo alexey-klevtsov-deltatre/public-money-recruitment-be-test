@@ -46,16 +46,16 @@ namespace VacationRental.Core.Services
 
             var key = new ResourceIdViewModel { Id = _bookingRepository.NextId() };
 
-                _bookingRepository.Insert(key.Id, new BookingViewModel
-                {
-                    Id = key.Id,
-                    Nights = model.Nights,
-                    RentalId = model.RentalId,
-                    Start = model.Start.Date,
-                    Unit = GetFreeRoom(rental, model)
-                });
+            _bookingRepository.Insert(key.Id, new BookingViewModel
+            {
+                Id = key.Id,
+                Nights = model.Nights,
+                RentalId = model.RentalId,
+                Start = model.Start.Date,
+                Unit = GetFreeRoom(rental, model)
+            });
 
-                return key;
+            return key;
         }
 
         public IEnumerable<OverlappedBookingViewModel> GetOverlappings(RentalViewModel rental)
@@ -79,7 +79,7 @@ namespace VacationRental.Core.Services
                         checkedBooking, booked))
                     {
                         yield return new OverlappedBookingViewModel
-                            { OverlappedBookings = new[] { checkedBooking, booked } };
+                        { OverlappedBookings = new[] { checkedBooking, booked } };
                     }
                 }
             }
