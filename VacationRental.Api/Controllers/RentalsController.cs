@@ -1,43 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
-using VacationRental.Api.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using VacationRental.Core.Models;
+using VacationRental.Core.Services;
 
 namespace VacationRental.Api.Controllers
 {
     [Route("api/v1/rentals")]
     [ApiController]
-    public class RentalsController : ControllerBase
+    public sealed class RentalsController : ControllerBase
     {
-        private readonly IDictionary<int, RentalViewModel> _rentals;
+        private readonly IRentalsService _rentalsService;
 
-        public RentalsController(IDictionary<int, RentalViewModel> rentals)
-        {
-            _rentals = rentals;
-        }
+        public RentalsController(IRentalsService rentalsService) => _rentalsService = rentalsService;
 
         [HttpGet]
         [Route("{rentalId:int}")]
-        public RentalViewModel Get(int rentalId)
-        {
-            if (!_rentals.ContainsKey(rentalId))
-                throw new ApplicationException("Rental not found");
-
-            return _rentals[rentalId];
-        }
+        public RentalViewModel Get(int rentalId) => _rentalsService.Get(rentalId);
 
         [HttpPost]
-        public ResourceIdViewModel Post(RentalBindingModel model)
-        {
-            var key = new ResourceIdViewModel { Id = _rentals.Keys.Count + 1 };
+        public ResourceIdViewModel Post(RentalBindingModel model) => _rentalsService.AddRental(model);
 
-            _rentals.Add(key.Id, new RentalViewModel
-            {
-                Id = key.Id,
-                Units = model.Units
-            });
-
-            return key;
-        }
+        [HttpPut]
+        [Route("{rentalId:int}")]
+        public RentalViewModel Put(int rentalId, [FromBody]RentalBindingModel model) => _rentalsService.UpdateRental(rentalId, model);
     }
 }
