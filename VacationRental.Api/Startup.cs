@@ -24,7 +24,7 @@ namespace VacationRental.Api
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Vacation rental information", Version = "v1" });
             });
-            services.AddVacationRentalCore();
+            services.AddVacationRentalCore(Configuration);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

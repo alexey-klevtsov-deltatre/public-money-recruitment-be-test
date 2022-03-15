@@ -7,9 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VacationRental.Api", "Vacat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VacationRental.Api.Tests", "VacationRental.Api.Tests\VacationRental.Api.Tests.csproj", "{57FE6E13-7144-459F-BCA8-431087D3DAEE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VacationRental.Repository", "VacationRental.Repository\VacationRental.Repository.csproj", "{6CDF6E5C-7E05-4312-834E-F31838EDDF07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VacationRental.Repository", "VacationRental.Repository\VacationRental.Repository.csproj", "{6CDF6E5C-7E05-4312-834E-F31838EDDF07}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VacationRental.Core", "VacationRental.Core\VacationRental.Core.csproj", "{16DDEC2C-41D6-44A6-983F-F9CA3A1A57C1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VacationRental.Core", "VacationRental.Core\VacationRental.Core.csproj", "{16DDEC2C-41D6-44A6-983F-F9CA3A1A57C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VacationRental.Synchronization", "VacationRental.Synchronization\VacationRental.Synchronization.csproj", "{D7C4CA8E-6CA9-4E6D-B86F-8F8AA185C218}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VacationRental.Common", "VacationRental.Common\VacationRental.Common.csproj", "{D7952C30-C88A-4DF5-84C0-2030AF9F8162}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{16DDEC2C-41D6-44A6-983F-F9CA3A1A57C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16DDEC2C-41D6-44A6-983F-F9CA3A1A57C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16DDEC2C-41D6-44A6-983F-F9CA3A1A57C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7C4CA8E-6CA9-4E6D-B86F-8F8AA185C218}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7C4CA8E-6CA9-4E6D-B86F-8F8AA185C218}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7C4CA8E-6CA9-4E6D-B86F-8F8AA185C218}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7C4CA8E-6CA9-4E6D-B86F-8F8AA185C218}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7952C30-C88A-4DF5-84C0-2030AF9F8162}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7952C30-C88A-4DF5-84C0-2030AF9F8162}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7952C30-C88A-4DF5-84C0-2030AF9F8162}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7952C30-C88A-4DF5-84C0-2030AF9F8162}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

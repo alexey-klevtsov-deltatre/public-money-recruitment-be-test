@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Linq;
 using VacationRental.Core.Exceptions;
+using VacationRental.Core.Extensions;
 using VacationRental.Core.Models;
 using VacationRental.Repository;
+using VacationRental.Synchronization.Exceptions;
+using VacationRental.Synchronization.Lock;
 
 namespace VacationRental.Core.Services
 {
@@ -10,11 +13,13 @@ namespace VacationRental.Core.Services
     {
         private readonly IVacationRepository<RentalViewModel> _rentalRepository;
         private readonly IBookingsService _bookingsService;
+        private readonly ISyncLockFactory _syncLockFactory;
 
-        public RentalsService(IVacationRepository<RentalViewModel> rentalRepository, IBookingsService bookingsService)
+        public RentalsService(IVacationRepository<RentalViewModel> rentalRepository, IBookingsService bookingsService, ISyncLockFactory syncLockFactory)
         {
             _rentalRepository = rentalRepository;
             _bookingsService = bookingsService;
+            _syncLockFactory = syncLockFactory;
         }
 
         public RentalViewModel Get(int rentalId)
@@ -44,13 +49,21 @@ namespace VacationRental.Core.Services
             var oldRental = _rentalRepository.Get(rentalId);
             if (oldRental == null)
                 throw new ApplicationException("Rental not found");
+            try
+            {
+                using var syncLock = _syncLockFactory.CreateLock(oldRental.LockKey());
 
-            var newRental = new RentalViewModel(rentalId, model);
-            var overlapped = _bookingsService.GetOverlappings(newRental).FirstOrDefault();
-            if (overlapped != null)
-                throw new RentalOverlappedException(overlapped);
+                var newRental = new RentalViewModel(rentalId, model);
+                var overlapped = _bookingsService.GetOverlappings(newRental).FirstOrDefault();
+                if (overlapped != null)
+                    throw new RentalOverlappedException(overlapped);
 
-            return _rentalRepository.Update(rentalId, newRental);
+                return _rentalRepository.Update(rentalId, newRental);
+            }
+            catch (LockAcquireException)
+            {
+                throw new RentalLockException(oldRental.Id);
+            }
         }
 
         private static void Validate(RentalBindingModel model)

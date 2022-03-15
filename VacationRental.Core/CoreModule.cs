@@ -1,19 +1,19 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using VacationRental.Core.Models;
 using VacationRental.Core.Services;
 using VacationRental.Repository;
+using VacationRental.Synchronization;
 
 namespace VacationRental.Core
 {
     public static class CoreModule
     {
-        public static void AddVacationRentalCore(this IServiceCollection services)
-        {
-            services.AddSingleton<IVacationRepository<BookingViewModel>, VacationInMemoryRepository<BookingViewModel>>();
-            services.AddSingleton<IVacationRepository<RentalViewModel>, VacationInMemoryRepository<RentalViewModel>>();
-            services.AddSingleton<IBookingsService, BookingsService>();
-            services.AddSingleton<ICalendarService, CalendarService>();
-            services.AddSingleton<IRentalsService, RentalsService>();
-        }
+        public static IServiceCollection AddVacationRentalCore(this IServiceCollection services, IConfiguration configuration) =>
+            services.AddSynchronization(configuration)
+                .AddSingleton<IVacationRepository<BookingViewModel>, VacationInMemoryRepository<BookingViewModel>>()
+                .AddSingleton<IVacationRepository<RentalViewModel>, VacationInMemoryRepository<RentalViewModel>>()
+                .AddSingleton<IBookingsService, BookingsService>().AddSingleton<ICalendarService, CalendarService>()
+                .AddSingleton<IRentalsService, RentalsService>();
     }
 }

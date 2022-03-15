@@ -1,11 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
+     <PropertyGroup>
+          <TargetFramework>net5.0</TargetFramework>
+     </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\VacationRental.Repository\VacationRental.Repository.csproj" />
-  </ItemGroup>
+     <ItemGroup>
+          <ProjectReference Include="..\VacationRental.Repository\VacationRental.Repository.csproj" />
+          <ProjectReference Include="..\VacationRental.Synchronization\VacationRental.Synchronization.csproj" />
+     </ItemGroup>
 
 </Project>

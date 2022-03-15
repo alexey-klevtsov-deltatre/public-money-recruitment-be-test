@@ -5,6 +5,8 @@ using VacationRental.Core.Exceptions;
 using VacationRental.Core.Extensions;
 using VacationRental.Core.Models;
 using VacationRental.Repository;
+using VacationRental.Synchronization.Exceptions;
+using VacationRental.Synchronization.Lock;
 
 namespace VacationRental.Core.Services
 {
@@ -12,12 +14,14 @@ namespace VacationRental.Core.Services
     {
         private readonly IVacationRepository<BookingViewModel> _bookingRepository;
         private readonly IVacationRepository<RentalViewModel> _rentalRepository;
+        private readonly ISyncLockFactory _syncLockFactory;
 
         public BookingsService(IVacationRepository<BookingViewModel> bookingRepository,
-            IVacationRepository<RentalViewModel> rentalRepository)
+            IVacationRepository<RentalViewModel> rentalRepository, ISyncLockFactory syncLockFactory)
         {
             _bookingRepository = bookingRepository;
             _rentalRepository = rentalRepository;
+            _syncLockFactory = syncLockFactory;
         }
 
         public BookingViewModel Get(int bookingId)
@@ -39,18 +43,27 @@ namespace VacationRental.Core.Services
             if (rental == null)
                 throw new ApplicationException("Rental not found");
 
-            var key = new ResourceIdViewModel { Id = _bookingRepository.NextId() };
-
-            _bookingRepository.Insert(key.Id, new BookingViewModel
+            try
             {
-                Id = key.Id,
-                Nights = model.Nights,
-                RentalId = model.RentalId,
-                Start = model.Start.Date,
-                Unit = GetFreeRoom(rental, model)
-            });
+                using var syncLock = _syncLockFactory.CreateLock(rental.LockKey());
 
-            return key;
+                var key = new ResourceIdViewModel { Id = _bookingRepository.NextId() };
+
+                _bookingRepository.Insert(key.Id, new BookingViewModel
+                {
+                    Id = key.Id,
+                    Nights = model.Nights,
+                    RentalId = model.RentalId,
+                    Start = model.Start.Date,
+                    Unit = GetFreeRoom(rental, model)
+                });
+
+                return key;
+            }
+            catch (LockAcquireException)
+            {
+                throw new RentalLockException(model.RentalId);
+            }
         }
 
         public IEnumerable<OverlappedBookingViewModel> GetOverlappings(RentalViewModel rental)
@@ -72,7 +85,7 @@ namespace VacationRental.Core.Services
                         checkedBooking, booked))
                     {
                         yield return new OverlappedBookingViewModel
-                            { OverlappedBookings = new[] { checkedBooking, booked } };
+                        { OverlappedBookings = new[] { checkedBooking, booked } };
                     }
                 }
             }
